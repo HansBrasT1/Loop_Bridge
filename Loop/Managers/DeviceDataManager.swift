@@ -19,6 +19,7 @@ import NightscoutUploadKit
 import RileyLinkKit
 import ShareClient
 import xDripG5
+//import SocketIO
 
 
 final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseStoreDelegate, TransmitterDelegate, ReceiverDelegate {
@@ -275,28 +276,50 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
         - error: An error describing why the fetch and/or store failed
      */
     private func fetchPumpHistory(_ completionHandler: @escaping (_ error: Error?) -> Void) {
-        guard let device = rileyLinkManager.firstConnectedDevice else {
-            return
+        struct Holder {
+            static var date = Date()
+            static var timesCalled = 0
         }
-
-        let startDate = doseStore.pumpEventQueryAfterDate
-
-        device.ops?.getHistoryEvents(since: startDate) { (result) in
-            switch result {
-            case let .success(events, _):
-                self.doseStore.add(events) { (error) in
-                    if let error = error {
-                        self.logger.addError("Failed to store history: \(error)", fromSource: "DoseStore")
-                    }
-
-                    completionHandler(error)
-                }
-            case .failure(let error):
-                self.logger.addError("Failed to fetch history: \(error)", fromSource: "RileyLink")
-
-                completionHandler(error)
-            }
+        
+        var events: [NewPumpEvent] = []
+        var dose: DoseEntry?
+        
+        //let date = Date()
+        if (Holder.timesCalled < 2) {
+            dose = DoseEntry(type: .bolus, startDate: Holder.date, endDate: Holder.date, value: 2.0, unit: .units)
+            Holder.timesCalled += 1
         }
+        
+        events.append(NewPumpEvent(date: Date(), dose: dose, isMutable: false, raw: Data(), title: "BolusNormalPumpEvent"))
+        
+        self.doseStore.addPumpEvents(events, completionHandler: completionHandler)
+
+        NotificationCenter.default.post(name: .PumpStatusUpdated, object: self)
+
+//        self.doseStore.addPumpEvents(events, completionHandler: completionHandler)
+
+//        guard let device = rileyLinkManager.firstConnectedDevice else {
+//            return
+//        }
+
+//        let startDate = doseStore.pumpEventQueryAfterDate
+
+//        device.ops?.getHistoryEvents(since: startDate) { (result) in
+//            switch result {
+//            case let .success(events, _):
+//                self.doseStore.add(events) { (error) in
+//                    if let error = error {
+//                        self.logger.addError("Failed to store history: \(error)", fromSource: "DoseStore")
+//                    }
+//
+//                    completionHandler(error)
+//                }
+//            case .failure(let error):
+//                self.logger.addError("Failed to fetch history: \(error)", fromSource: "RileyLink")
+//
+//                completionHandler(error)
+//            }
+//        }
     }
 
     /**
@@ -311,7 +334,7 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
             completion(.failure(LoopError.configurationError))
             return
         }
-
+        
         ops.readPumpStatus { (result) in
             switch result {
             case .success(let status):
@@ -460,7 +483,9 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
     }
 
     func transmitter(_ transmitter: xDripG5.Transmitter, didRead glucose: xDripG5.Glucose) {
-        assertCurrentPumpData()
+//        assertCurrentPumpData()
+        self.updateReservoirVolume(97.5, at: Date(), withTimeLeft: TimeInterval(hours:11.0))
+
 
         guard glucose != latestGlucoseG5 else {
             return

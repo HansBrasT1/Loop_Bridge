@@ -1012,6 +1012,7 @@
 				"$(SRCROOT)/Carthage/Build/iOS/NightscoutUploadKit.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/Crypto.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/G4ShareSpy.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/SocketIO.framework",
 			);
 			outputPaths = (
 			);
