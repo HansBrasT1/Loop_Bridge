@@ -866,6 +866,29 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
             AnalyticsManager.sharedManager.didChangeMaximumBolus()
         }
     }
+    
+    // MARK: - BG guard
+
+    func notifyBGGuard() {
+        
+        guard let uploader = remoteDataManager.nightscoutUploader else {
+//            completionHandler([])
+            return
+        }
+        
+        let nsEntry = NightscoutTreatment(timestamp: Date(), enteredBy: "loop://\(UIDevice.current.name)")
+        
+        uploader.upload(nsEntry) { (result) in
+            switch result {
+            case .success(let ids): break
+                // Pass new ids back
+//                completionHandler(ids)
+            case .failure(let error):
+                self.logger.addError(error, fromSource: "NightscoutUploader")
+//                completionHandler([])
+            }
+        }
+    }
 
     // MARK: - CarbKit
 

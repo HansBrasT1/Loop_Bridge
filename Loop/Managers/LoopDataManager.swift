@@ -629,6 +629,8 @@ final class LoopDataManager {
         }
 
         let pendingBolusAmount: Double = lastBolus?.units ?? 0
+        
+        deviceDataManager.notifyBGGuard()
 
         let recommendedBolusWithMomentum = max(0, DoseMath.recommendBolusFromPredictedGlucose(glucose,
             lastTempBasal: self.lastTempBasal,
