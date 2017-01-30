@@ -876,9 +876,12 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
             return
         }
         
-        let nsEntry = NightscoutTreatment(timestamp: Date(), enteredBy: "loop://\(UIDevice.current.name)")
+        let nsEntry: NightscoutTreatment = AnnouncementNightscoutTreatment(timestamp: Date(), enteredBy: "loop://\(UIDevice.current.name)", id: nil, message: "Hit BG guard")
         
-        uploader.upload(nsEntry) { (result) in
+        var entries = [NightscoutTreatment]()
+        entries.append(nsEntry)
+        
+        uploader.upload(entries) { (result) in
             switch result {
             case .success(let ids): break
                 // Pass new ids back
