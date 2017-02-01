@@ -869,14 +869,14 @@ final class DeviceDataManager: CarbStoreDelegate, CarbStoreSyncDelegate, DoseSto
     
     // MARK: - BG guard
 
-    func notifyBGGuard() {
+    func notifyBGGuard(_ message: String?) {
         
         guard let uploader = remoteDataManager.nightscoutUploader else {
 //            completionHandler([])
             return
         }
         
-        let nsEntry: NightscoutTreatment = AnnouncementNightscoutTreatment(timestamp: Date(), enteredBy: "loop://\(UIDevice.current.name)", id: nil, message: "Hit BG guard")
+        let nsEntry: NightscoutTreatment = AnnouncementNightscoutTreatment(timestamp: Date(), enteredBy: "loop://\(UIDevice.current.name)", id: nil, message: message)
         
         var entries = [NightscoutTreatment]()
         entries.append(nsEntry)

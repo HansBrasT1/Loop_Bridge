@@ -186,4 +186,16 @@ struct DoseMath {
 
         return min(maxBolus, max(0, doseUnits))
     }
+
+    static func minGlucoseIsAboveTarget(_ glucose: [GlucoseValue]) -> Bool {
+        guard glucose.count > 1 else {
+            return false
+        }
+        
+        let minGlucose = glucose.min { $0.quantity < $1.quantity }!
+        
+        let minGlucoseTarget = HKQuantity(unit: HKUnit.millimolesPerLiterUnit(), doubleValue: 4.0)
+        
+        return minGlucose.quantity >= minGlucoseTarget
+    }
 }

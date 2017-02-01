@@ -630,8 +630,6 @@ final class LoopDataManager {
 
         let pendingBolusAmount: Double = lastBolus?.units ?? 0
         
-        deviceDataManager.notifyBGGuard()
-
         let recommendedBolusWithMomentum = max(0, DoseMath.recommendBolusFromPredictedGlucose(glucose,
             lastTempBasal: self.lastTempBasal,
             maxBolus: maxBolus,
@@ -647,6 +645,11 @@ final class LoopDataManager {
             insulinSensitivity: insulinSensitivity,
             basalRateSchedule: basalRates
         ) - pendingBolusAmount)
+        
+//        guard DoseMath.minGlucoseIsAboveTarget(glucose) else {
+            deviceDataManager.notifyBGGuard(String(format: "Bolus with momentum: %.1f, without momentum: %.1f", recommendedBolusWithMomentum, recommendedBolusWithoutMomentum))
+//            return 0
+//        }
 
         return min(recommendedBolusWithMomentum, recommendedBolusWithoutMomentum)
     }
