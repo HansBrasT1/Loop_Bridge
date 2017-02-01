@@ -592,7 +592,7 @@ final class LoopDataManager {
                         do {
                             try self.update()
 
-                            resultsHandler(try self.recommendBolus(), nil)
+                            resultsHandler(try self.recommendBolus(notifyBolusGuard: true), nil)
                         } catch let error {
                             resultsHandler(nil, error)
                         }
@@ -606,7 +606,7 @@ final class LoopDataManager {
         }
     }
 
-    private func recommendBolus() throws -> Double {
+    private func recommendBolus(notifyBolusGuard: Bool = false) throws -> Double {
         guard let
             glucose = self.predictedGlucose,
             let glucoseWithoutMomentum = self.predictedGlucoseWithoutMomentum,
@@ -635,7 +635,8 @@ final class LoopDataManager {
             maxBolus: maxBolus,
             glucoseTargetRange: glucoseTargetRange,
             insulinSensitivity: insulinSensitivity,
-            basalRateSchedule: basalRates
+            basalRateSchedule: basalRates,
+            bolusGuard: !notifyBolusGuard
         ) - pendingBolusAmount)
 
         let recommendedBolusWithoutMomentum = max(0, DoseMath.recommendBolusFromPredictedGlucose(glucoseWithoutMomentum,
@@ -643,13 +644,16 @@ final class LoopDataManager {
             maxBolus: maxBolus,
             glucoseTargetRange: glucoseTargetRange,
             insulinSensitivity: insulinSensitivity,
-            basalRateSchedule: basalRates
+            basalRateSchedule: basalRates,
+            bolusGuard: !notifyBolusGuard
         ) - pendingBolusAmount)
         
-//        guard DoseMath.minGlucoseIsAboveTarget(glucose) else {
-            deviceDataManager.notifyBGGuard(String(format: "Bolus with momentum: %.1f, without momentum: %.1f", recommendedBolusWithMomentum, recommendedBolusWithoutMomentum))
-//            return 0
-//        }
+        if notifyBolusGuard {
+            guard DoseMath.minGlucoseIsAboveTarget(glucose) else {
+                deviceDataManager.notifyBGGuard(String(format: "Bolus with momentum: %.1f, without momentum: %.1f", recommendedBolusWithMomentum, recommendedBolusWithoutMomentum))
+                return 0
+            }
+        }
 
         return min(recommendedBolusWithMomentum, recommendedBolusWithoutMomentum)
     }
