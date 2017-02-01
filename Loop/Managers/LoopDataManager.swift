@@ -647,15 +647,19 @@ final class LoopDataManager {
             basalRateSchedule: basalRates,
             bolusGuard: !notifyBolusGuard
         ) - pendingBolusAmount)
+
+        let recommendedBolus = min(recommendedBolusWithMomentum, recommendedBolusWithoutMomentum)
         
         if notifyBolusGuard {
             guard DoseMath.minGlucoseIsAboveTarget(glucose) else {
-                deviceDataManager.notifyBGGuard(String(format: "Bolus with momentum: %.1f, without momentum: %.1f", recommendedBolusWithMomentum, recommendedBolusWithoutMomentum))
+                deviceDataManager.notifyBGGuard(
+                    String(format: "No bolus due to bolus guard. Bolus for eventual BG: %.2f U.", recommendedBolus)
+                )
                 return 0
             }
         }
-
-        return min(recommendedBolusWithMomentum, recommendedBolusWithoutMomentum)
+        
+        return recommendedBolus
     }
 
     func getRecommendedBolus(_ resultsHandler: @escaping (_ units: Double?, _ error: Error?) -> Void) {
