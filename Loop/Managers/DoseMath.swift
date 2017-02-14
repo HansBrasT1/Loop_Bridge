@@ -174,13 +174,13 @@ struct DoseMath {
 
         var doseUnits = (eventualGlucose.quantity.doubleValue(for: glucoseTargetRange.unit) - targetGlucose) / currentSensitivity
 
-        if let lastTempBasal = lastTempBasal, lastTempBasal.unit == .unitsPerHour && lastTempBasal.endDate > date {
-            let normalBasalRate = basalRateSchedule.value(at: date)
-            let remainingTime = lastTempBasal.endDate.timeIntervalSince(date)
-            let remainingUnits = (lastTempBasal.value - normalBasalRate) * remainingTime / TimeInterval(hours: 1)
-
-            doseUnits -= max(0, remainingUnits)
-        }
+//        if let lastTempBasal = lastTempBasal, lastTempBasal.unit == .unitsPerHour && lastTempBasal.endDate > date {
+//            let normalBasalRate = basalRateSchedule.value(at: date)
+//            let remainingTime = lastTempBasal.endDate.timeIntervalSince(date)
+//            let remainingUnits = (lastTempBasal.value - normalBasalRate) * remainingTime / TimeInterval(hours: 1)
+//
+//            doseUnits -= max(0, remainingUnits)
+//        }
 
         doseUnits = round(doseUnits * 40) / 40
 
